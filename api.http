@@ -1,0 +1,24 @@
+POST http://localhost:3000/api/auth/signup HTTP/1.1
+content-type: application/json
+
+{
+  "name": "aaa",
+  "password": "aaa",
+  "email": "arghyac35@gmail.com"
+}
+
+###
+
+POST http://localhost:3000/api/auth/signin HTTP/1.1
+content-type: application/json
+
+{
+  "password": "aaa",
+  "email": "arghyac35@gmail.com",
+  "role": "user"
+}
+
+###
+
+GET http://localhost:3000/api/users/me HTTP/1.1
+Authorization: Bearer <token>
