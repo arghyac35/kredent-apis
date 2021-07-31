@@ -19,7 +19,7 @@ export default class CommentsService {
     return this.fetchCommentsByPost(deletedComment.post);
   }
 
-  public async fetchCommentsByPost(postID: string): Promise<{ comments: IComment[] }> {
+  public async fetchCommentsByPost(postID: string): Promise<{ comments: IComment[], postID: string }> {
     try {
       const rec = (comment: IComment, allComments: IComment[]) => {
         allComments.forEach((c: IComment) => {
@@ -52,7 +52,7 @@ export default class CommentsService {
         rec(comment, finalcommets);
       });
 
-      return { comments: finalcommets };
+      return { comments: finalcommets, postID };
     } catch (error) {
       this.logger.error(error);
       throw error;
