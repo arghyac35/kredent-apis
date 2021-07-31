@@ -6,6 +6,7 @@ export interface IUser {
   salt: string;
   role: string;
   lastLogin: Date;
+  ownsToken?: any;
 }
 
 export interface IUserInputDTO {

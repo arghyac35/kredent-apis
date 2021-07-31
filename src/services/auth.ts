@@ -13,6 +13,7 @@ export default class AuthService {
     @Inject('userModel') private userModel: Models.UserModel,
     @Inject('logger') private logger,
     @Inject('privateJWTRS256Key') private privateJWTRS256Key,
+    @Inject('refreshTokenModel') private refreshTokenModel: Models.RefreshTokenModel,
     @EventDispatcher() private eventDispatcher: EventDispatcherInterface,
   ) { }
 
@@ -51,8 +52,8 @@ export default class AuthService {
     }
   }
 
-  public async SignIn(email: string, password: string, role?: string): Promise<{ user: IUser; token: string }> {
-    const userRecord = await this.userModel.findOne({ email, role });
+  public async SignIn(email: string, password: string, ipAddress: string): Promise<{ message: string, user: IUser; token: string, refreshToken: string }> {
+    const userRecord = await this.userModel.findOne({ email, role: 'user' });
     if (!userRecord) {
       throw new Error(i18next.t('notRegistered'));
     }
@@ -65,6 +66,10 @@ export default class AuthService {
       this.logger.silly('Password is valid!');
       this.logger.silly('Generating JWT');
       const token = this.generateToken(userRecord);
+      const refreshToken = this.generateRefreshToken(userRecord, ipAddress);
+
+      // save refresh token
+      await refreshToken.save();
 
       this.eventDispatcher.dispatch(events.user.signIn, userRecord);
 
@@ -74,10 +79,54 @@ export default class AuthService {
       /**
        * Easy as pie, you don't need passport.js anymore :)
        */
-      return { user, token };
+      return { user, token, refreshToken: refreshToken.token, message: i18next.t('signInSuccess') };
     } else {
       throw new Error(i18next.t('invalidPass'));
     }
+  }
+
+  public async refreshToken({ token, ipAddress }) {
+    try {
+      const refreshToken = await this.getRefreshToken(token);
+      let { user } = refreshToken;
+
+      // replace old refresh token with a new one and save
+      const newRefreshToken = this.generateRefreshToken(user, ipAddress);
+      refreshToken.revoked = Date.now();
+      refreshToken.revokedByIp = ipAddress;
+      refreshToken.replacedByToken = newRefreshToken.token;
+      await refreshToken.save();
+      await newRefreshToken.save();
+
+      // generate new jwt
+      const jwtToken = this.generateToken(user);
+
+      // return basic details and tokens
+      return {
+        user,
+        token: jwtToken,
+        refreshToken: newRefreshToken.token,
+        message: i18next.t('tokenRefreshed')
+      };
+    } catch (error) {
+      this.logger.error(error);
+      throw error;
+    }
+  }
+
+  private async getRefreshToken(token: string) {
+    const refreshToken: any = await this.refreshTokenModel.findOne({ token }).populate('user');
+    if (!refreshToken || !refreshToken.isActive) throw new Error(i18next.t('invalidRT'));
+    return refreshToken;
+  }
+
+  public async revokeToken({ token, ipAddress }) {
+    const refreshToken = await this.getRefreshToken(token);
+
+    // revoke token and save
+    refreshToken.revoked = Date.now();
+    refreshToken.revokedByIp = ipAddress;
+    await refreshToken.save();
   }
 
   private generateToken(user) {
@@ -100,5 +149,19 @@ export default class AuthService {
       this.privateJWTRS256Key,
       { algorithm: 'RS256', expiresIn: '1d' }
     );
+  }
+
+  private generateRefreshToken(user: IUser, ipAddress: string) {
+    // create a refresh token that expires in 7 days
+    return new this.refreshTokenModel({
+      user: user._id,
+      token: this.randomTokenString(),
+      expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      createdByIp: ipAddress
+    });
+  }
+
+  private randomTokenString() {
+    return randomBytes(40).toString('hex');
   }
 }

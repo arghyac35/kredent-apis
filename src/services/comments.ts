@@ -1,5 +1,5 @@
 import { Service, Inject } from 'typedi';
-import { IComment } from '../interfaces/IComment';
+import { IComment, ICommentInputDTO } from '../interfaces/IComment';
 
 @Service()
 export default class CommentsService {
@@ -8,7 +8,7 @@ export default class CommentsService {
     @Inject('logger') private logger
   ) { }
 
-  public async addComment(data: IComment): Promise<any> {
+  public async addComment(data: ICommentInputDTO): Promise<any> {
     await this.commentsModel.create(data);
 
     return this.fetchCommentsByPost(data.post);
@@ -35,7 +35,7 @@ export default class CommentsService {
         });
       };
 
-      const allcomments = await this.commentsModel.find({ post: postID }).populate('user').populate('post').sort('createdAt').lean();
+      const allcomments = await this.commentsModel.find({ post: postID }).populate('user', 'name').populate('post').sort('-createdAt').lean();
 
       let finalcommets: IComment[] = [];
 

@@ -35,8 +35,5 @@ export default {
     prefix: '/api',
   },
 
-  mailer: {
-    username: process.env.MAILER_USERNAME,
-    password: process.env.MAILER_PASSWORD
-  }
+  allowedOrigins: process.env.ALLOWEDORIGINS
 };

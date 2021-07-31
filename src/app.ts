@@ -27,7 +27,12 @@ async function startServer() {
     process.exit(1);
   });
 
-  const io = require("socket.io")(server);
+  const io = require("socket.io")(server, {
+    cors: {
+      origin: config.allowedOrigins.split(','),
+      methods: ["GET", "POST"]
+    }
+  });
 
   socketIoHandlers(io)
 

@@ -31,9 +31,15 @@ export default async ({ expressApp }) => {
     model: require('../models/comments').default,
   };
 
+  const refreshTokenModel = {
+    name: 'refreshTokenModel',
+    model: require('../models/refreshToken').default,
+  };
+
   await dependencyInjectorLoader({
     models: [
       userModel,
+      refreshTokenModel,
       postModel,
       commentsModel
     ],
