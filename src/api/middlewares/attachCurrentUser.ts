@@ -18,8 +18,6 @@ const attachCurrentUser = async (req, res, next) => {
       return res.sendStatus(401);
     }
     const currentUser = userRecord.toObject();
-    Reflect.deleteProperty(currentUser, 'password');
-    Reflect.deleteProperty(currentUser, 'salt');
     req.currentUser = currentUser;
     return next();
   } catch (e) {

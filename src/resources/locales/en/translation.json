@@ -1,1 +1,13 @@
-{}
+{
+  "userExists": "This username or email is not available",
+  "userCreate": {
+    "success": "Registration successfull, please proceed to login",
+    "error": "User cannot be created"
+  },
+  "signInSuccess": "Login successfull",
+  "notRegistered": "User not registered",
+  "invalidPass": "Invalid Password",
+  "addSuccess": "Added successfully",
+  "fetchSuccess": "Data fetched successfully",
+  "delSuccess": "Deleted successfully"
+}

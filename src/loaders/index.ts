@@ -6,26 +6,36 @@ import Logger from './logger';
 import './events';
 
 export default async ({ expressApp }) => {
-  const mongoConnection = await mongooseLoader();
+  await mongooseLoader();
   Logger.info('✌️ DB loaded and connected!');
 
   /**
-   * WTF is going on here?
+   * What is going on here?
    *
    * We are injecting the mongoose models into the DI container.
    * I know this is controversial but will provide a lot of flexibility at the time
    * of writing unit tests, just go and check how beautiful they are!
    */
-
   const userModel = {
     name: 'userModel',
-    // Notice the require syntax and the '.default'
     model: require('../models/user').default,
+  };
+
+  const postModel = {
+    name: 'postModel',
+    model: require('../models/post').default,
+  };
+
+  const commentsModel = {
+    name: 'commentsModel',
+    model: require('../models/comments').default,
   };
 
   await dependencyInjectorLoader({
     models: [
-      userModel
+      userModel,
+      postModel,
+      commentsModel
     ],
   });
   Logger.info('✌️ Dependency Injector loaded');

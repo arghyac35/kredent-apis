@@ -31,4 +31,24 @@ const User = new mongoose.Schema(
   { timestamps: true },
 );
 
+User.set('toJSON', {
+  virtuals: true,
+  versionKey: false,
+  transform: (doc, ret) => {
+    // remove these props when object is serialized
+    delete ret.password;
+    delete ret.salt;
+  }
+});
+
+User.set('toObject', {
+  virtuals: true,
+  versionKey: false,
+  transform: (doc, ret) => {
+    // remove these props when object is serialized
+    delete ret.password;
+    delete ret.salt;
+  }
+});
+
 export default mongoose.model<IUser & mongoose.Document>('User', User);

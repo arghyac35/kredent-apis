@@ -1,4 +1,6 @@
 import { Document, Model } from 'mongoose';
+import { IComment } from '../../interfaces/IComment';
+import { IPost } from '../../interfaces/IPost';
 import { IUser } from '../../interfaces/IUser';
 
 declare global {
@@ -10,5 +12,7 @@ declare global {
 
   namespace Models {
     export type UserModel = Model<IUser & Document>;
+    export type PostModel = Model<IPost & Document>;
+    export type CommentModel = Model<IComment & Document>;
   }
 }
