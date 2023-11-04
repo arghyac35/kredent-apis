@@ -21,6 +21,8 @@ export default {
    */
   databaseURL: process.env.MONGODB_URI,
 
+  jwtSecret: process.env.JWT_SECRET,
+
   /**
    * Used by winston logger
    */
@@ -35,5 +37,5 @@ export default {
     prefix: '/api',
   },
 
-  allowedOrigins: process.env.ALLOWEDORIGINS
+  allowedOrigins: process.env.ALLOWEDORIGINS,
 };
