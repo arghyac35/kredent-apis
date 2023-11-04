@@ -151,7 +151,7 @@ export default class AuthService {
         name: user.name,
       },
       config.jwtSecret,
-      { algorithm: 'RS256', expiresIn: '1d' },
+      { expiresIn: '1d' },
     );
   }
 
