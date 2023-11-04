@@ -1,21 +1,21 @@
-import { Service, Inject } from 'typedi';
-import jwt from 'jsonwebtoken';
 import argon2 from 'argon2';
 import { randomBytes } from 'crypto';
-import { IUser, IUserInputDTO } from '../interfaces/IUser';
-import { EventDispatcher, EventDispatcherInterface } from '../decorators/eventDispatcher';
-import events from '../subscribers/events';
 import i18next from 'i18next';
+import jwt from 'jsonwebtoken';
+import { Inject, Service } from 'typedi';
+import config from '../config';
+import { EventDispatcher, EventDispatcherInterface } from '../decorators/eventDispatcher';
+import { IUser, IUserInputDTO } from '../interfaces/IUser';
+import events from '../subscribers/events';
 
 @Service()
 export default class AuthService {
   constructor(
     @Inject('userModel') private userModel: Models.UserModel,
     @Inject('logger') private logger,
-    @Inject('privateJWTRS256Key') private privateJWTRS256Key,
     @Inject('refreshTokenModel') private refreshTokenModel: Models.RefreshTokenModel,
     @EventDispatcher() private eventDispatcher: EventDispatcherInterface,
-  ) { }
+  ) {}
 
   public async SignUp(userInputDTO: IUserInputDTO): Promise<{ user: IUser; message: string }> {
     try {
@@ -52,7 +52,11 @@ export default class AuthService {
     }
   }
 
-  public async SignIn(email: string, password: string, ipAddress: string): Promise<{ message: string, user: IUser; token: string, refreshToken: string }> {
+  public async SignIn(
+    email: string,
+    password: string,
+    ipAddress: string,
+  ): Promise<{ message: string; user: IUser; token: string; refreshToken: string }> {
     const userRecord = await this.userModel.findOne({ email, role: 'user' });
     if (!userRecord) {
       throw new Error(i18next.t('notRegistered'));
@@ -106,7 +110,7 @@ export default class AuthService {
         user,
         token: jwtToken,
         refreshToken: newRefreshToken.token,
-        message: i18next.t('tokenRefreshed')
+        message: i18next.t('tokenRefreshed'),
       };
     } catch (error) {
       this.logger.error(error);
@@ -144,10 +148,10 @@ export default class AuthService {
       {
         _id: user._id, // We are gonna use this in the middleware 'isAuth'
         role: user.role,
-        name: user.name
+        name: user.name,
       },
-      this.privateJWTRS256Key,
-      { algorithm: 'RS256', expiresIn: '1d' }
+      config.jwtSecret,
+      { algorithm: 'RS256', expiresIn: '1d' },
     );
   }
 
@@ -157,7 +161,7 @@ export default class AuthService {
       user: user._id,
       token: this.randomTokenString(),
       expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-      createdByIp: ipAddress
+      createdByIp: ipAddress,
     });
   }
 
